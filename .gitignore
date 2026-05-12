@@ -1,12 +1,26 @@
-plugin
-playlists
-pid
-watch_later
-.config/zsh/.zcompdump
-.config/zsh/.zcompdump
+# Runtime state and caches
+*.log
+*.pid
+*.tmp
+
+# Shell-generated files
+.config/zsh/.zcompdump*
+
+# qutebrowser local state
 .config/qutebrowser/autoconfig.yml
-.config/zsh/.zcompdump.void.6606
-.config/nvim/lazy-lock.json
-.config/qutebrowser/qsettings/QtProject.conf
-.config/qutebrowser/bookmarks/urls
+.config/qutebrowser/bookmarks/
+.config/qutebrowser/qsettings/
 .config/qutebrowser/quickmarks
+
+# Media player state
+.config/mpv/watch_later/
+.config/mpv/playlists/
+.config/mpdnotify/log
+.config/mpdnotify/pid
+.config/ncmpcpp/error.log
+
+# Local plugin/runtime folders
+/plugin/
+/playlists/
+/pid
+/watch_later/
