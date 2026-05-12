@@ -21,8 +21,17 @@ HISTSIZE=10000
 SAVEHIST=10000
 bindkey -v                                                      # Vim Keybindings -e for soymacs
 
-autoload -Uz compinit                                           # Completion
-compinit
+autoload -Uz compinit
+
+ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+mkdir -p "${ZSH_COMPDUMP:h}"
+
+if [[ ! -f "$ZSH_COMPDUMP" || "$ZSH_COMPDUMP" -ot ~/.config/zsh/.zshrc ]]; then
+  compinit -d "$ZSH_COMPDUMP"
+else
+  compinit -C -d "$ZSH_COMPDUMP"
+fi
+
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'       # Case insensitive tab completion
 zstyle ':completion:*' rehash true                              # automatically find new executables in path 
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"         # Colored completion (different colors for dirs/files/etc)
@@ -38,7 +47,8 @@ zstyle ':completion:*' cache-path $HOME/.cache/zsh/.zshcomp
 
 # Settings
 setopt autocd                                                   # Automatically cd into typed directory.
-setopt correct                                                  # Auto correct mistakes
+unsetopt correct                                                  # Auto correct mistakes
+unsetopt correctall                                                  # Auto correct mistakes
 setopt extendedglob                                             # Extended globbing. Allows using regular expressions with *
 setopt nocaseglob                                               # Case insensitive globbing
 setopt rcexpandparam                                            # Array expension with parameters
@@ -115,6 +125,8 @@ alias btc="bluetoothctl"
 alias screc="ffmpeg -video_size 1920x1080 -framerate 60 -f x11grab -c:v libx264 -i :0.0" # You have to provide the file name along with this alias
 alias pyenv="source .env/bin/activate"
 alias vpn="doas openvpn"
+alias THM="doas openvpn ~/.local/share/openvpn/thm.ovpn"
+alias TODO="$EDITOR ~/Documents/TODO.md"
 
 # Git
 alias gini="git init"
@@ -204,4 +216,11 @@ source $XDG_CONFIG_HOME/zsh/completions/*.zsh
 source $XDG_CONFIG_HOME/zsh/.zshenv
 
 eval "$(starship init zsh)"
-pfetch
+
+# opencode
+export PATH=/home/iamb4uc/.opencode/bin:$PATH
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:/opt/:$PATH"
+
+# bun completions
+[ -s "/home/iamb4uc/.bun/_bun" ] && source "/home/iamb4uc/.bun/_bun"
