@@ -26,6 +26,9 @@ map("n", "<leader>h", "<C-w>h")
 -- compiler stuff by The Tech gent Luke Smith
 map("n", "<leader>a", ':! compiler "%:p"<CR><CR>')
 
+-- cleanup script for any AI related resume writing, it cleans up citations
+map("n", "<leader>A", ":! resume_checker %<CR>")
+
 -- Open corresponding .pdf/.html or preview
 map("n", "<leader>p", ':! opout "%:p" <CR><CR>')
 
