@@ -17,15 +17,15 @@ ext="${file##*.}"
 cd "$dir" || exit 1
 
 textype() {
-	textarget="$(getcomproot "$file" || echo "$file")"
-	echo "$textarget"
-	command="pdflatex"
-	(head -n5 "$textarget" | grep -qi 'xelatex') && command="xelatex"
-	$command --output-directory="${textarget%/*}" "${textarget%.*}"
-	grep -qi addbibresource "$textarget" &&
-		biber --input-directory "${textarget%/*}" "${textarget%.*}" &&
-		$command --output-directory="${textarget%/*}" "${textarget%.*}" &&
-		$command --output-directory="${textarget%/*}" "${textarget%.*}"
+    textarget="$(getcomproot "$file" || echo "$file")"
+    echo "$textarget"
+    command="pdflatex"
+    (head -n5 "$textarget" | grep -qi 'xelatex') && command="xelatex"
+    $command --output-directory="${textarget%/*}" "${textarget%.*}"
+    grep -qi addbibresource "$textarget" &&
+        biber --input-directory "${textarget%/*}" "${textarget%.*}" &&
+        $command --output-directory="${textarget%/*}" "${textarget%.*}" &&
+        $command --output-directory="${textarget%/*}" "${textarget%.*}"
 }
 
 case "$ext" in
