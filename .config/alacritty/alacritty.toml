@@ -1,0 +1,85 @@
+[general]
+import = ["~/.config/alacritty/catppuccin-mocha.toml"]
+live_config_reload = true
+ipc_socket = true
+
+[env]
+TERM = "xterm-256color"
+WINIT_X11_SCALE_FACTOR = "1.66"
+
+[window]
+opacity = 0.7
+blur = false
+decorations = "Full"
+startup_mode = "Windowed"
+dynamic_padding = true
+dynamic_title = true
+resize_increments = false
+option_as_alt = "None"
+
+[window.padding]
+x = 12
+y = 12
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[font]
+size = 8.0
+builtin_box_drawing = true
+
+[font.normal]
+family = "DepartureMono Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "DepartureMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "DepartureMono Nerd Font"
+style = "Italic"
+
+[cursor]
+style = "Block"
+unfocused_hollow = true
+thickness = 0.15
+blink_interval = 750
+blink_timeout = 5
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+save_to_clipboard = false
+
+[mouse]
+hide_when_typing = false
+
+[bell]
+animation = "Linear"
+color = "#ffffff"
+duration = 0
+
+[terminal]
+osc52 = "onlycopy"
+
+[hints]
+alphabet = "jfkdls;ahgurieowpq"
+
+[[hints.enabled]]
+regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001f-<>\"\\s{-}\\^⟨⟩`\\\\]+"
+hyperlinks = true
+command = "xdg-open"
+post_processing = true
+persist = false
+
+[hints.enabled.mouse]
+enabled = true
+
+[debug]
+log_level = "WARN"
+print_events = false
+persistent_logging = false
+render_timer = false
+highlight_damage = false
+prefer_egl = false
