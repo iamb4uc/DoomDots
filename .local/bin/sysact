@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# A dmenu wrapper script for system functions.
+# A doommenu wrapper script for system functions.
 export WM="DWM"
 case "$(readlink -f /sbin/init)" in
 *systemd*) ctl='systemctl' ;;
@@ -8,12 +8,12 @@ case "$(readlink -f /sbin/init)" in
 esac
 
 wmpid() { # This function is needed if there are multiple instances of the window manager.
-	tree="$(pstree -ps $$)"
-	tree="${tree#*$WM(}"
-	echo "${tree%%)*}"
+    tree="$(pstree -ps $$)"
+    tree="${tree#*$WM(}"
+    echo "${tree%%)*}"
 }
 
-case "$(printf "Lock\nLeave $WM\nRenew $WM\nReboot\nPoweroff\nSuspend" | dmenu -i -p 'Action: ')" in
+case "$(printf "Lock\nLeave $WM\nRenew $WM\nReboot\nPoweroff\nSuspend" | doommenu -i -p 'Action: ')" in
 'Lock') slock ;;
 "Leave $WM") kill -TERM "$(wmpid)" ;;
 "Renew $WM") kill -HUP "$(wmpid)" ;;
