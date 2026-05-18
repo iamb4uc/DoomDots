@@ -1,6 +1,6 @@
 # Dots
 
-Personal dotfiles for a lightweight Linux desktop built around X11, dwm, zsh,
+Personal dotfiles for a lightweight Linux desktop built around X11, DoomWM, zsh,
 Neovim, lf, mpv, qutebrowser, tmux, MPD/ncmpcpp, and a small collection of
 helper scripts.
 
@@ -28,7 +28,7 @@ make install
 To install somewhere other than `$HOME`, pass `PREFIX`:
 
 ```sh
-make PREFIX=/tmp/dots-test install
+make PREFIX=/tmp/DoomDots-test install
 ```
 
 ## Uninstall
@@ -56,7 +56,7 @@ make status  # show git status
 
 Desktop/session:
 
-- `dwm` autostart script in `.local/share/dwm/autostart.sh`
+- `DoomWM` autostart script in `.local/share/doomwm/autostart.sh`
 - X11 startup config in `.config/x11`
 - compositor config in `.config/picom.conf`
 - notification config in `.config/dunst`
@@ -87,7 +87,7 @@ Helper scripts live in `.local/bin`, including:
 
 - `compiler`, `opout`, `texclear`, and `getcomproot` for document workflows
 - `mounter` and `unmounter` for removable devices
-- `sysact` for dmenu-powered session actions
+- `sysact` for doommenu-powered session actions
 - `pman` for rendering man pages to PDF
 - `lfub` for lf image previews
 - `booksplit` for splitting audio by timecodes
@@ -99,7 +99,7 @@ These dotfiles assume a Linux desktop with X11. Install only the tools you
 actually use, but the full setup expects many of the following:
 
 ```text
-dwm slstatus dmenu slock xorg xrandr xset setxkbmap xwallpaper picom
+DoomWM doomstatus doommenu doomlock xorg xrandr xset setxkbmap xwallpaper picom
 zsh starship tmux neovim lf ueberzug jq bat fzf ripgrep
 alacritty ghostty qutebrowser mpv mpd ncmpcpp dunst redshift
 zathura glow neofetch sxiv imagemagick ffmpeg mediainfo
@@ -110,7 +110,7 @@ Some scripts are distro-specific or workflow-specific:
 - `void-maintenance` is for Void Linux and uses `xbps-*`, `vkpurge`, and
   `journalctl`.
 - `mounter` and `unmounter` expect tools such as `lsblk`, `simple-mtpfs`,
-  `cryptsetup`, `dmenu`, and `notify-send`.
+  `cryptsetup`, `doommenu`, and `notify-send`.
 - `compiler` expects language/document toolchains depending on the file type
   being compiled.
 

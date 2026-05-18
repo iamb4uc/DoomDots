@@ -6,8 +6,8 @@ APPS=$(grep -h '^Exec=' /usr/share/applications/*.desktop |
     sed 's/ .*$//' |
     sort -u)
 
-# Send the list of applications to dmenu
-CHOSEN_APP=$(echo "$APPS" | dmenu -l 10 -p "Launch Application:")
+# Send the list of applications to doommenu
+CHOSEN_APP=$(echo "$APPS" | doommenu -l 10 -p "Launch Application:")
 
 # Run the chosen application if it exists
 [ -n "$CHOSEN_APP" ] && exec "$CHOSEN_APP" &

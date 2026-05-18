@@ -1,1 +1,1 @@
-exec dbus-run-session vdwm
+exec dbus-run-session doomwm

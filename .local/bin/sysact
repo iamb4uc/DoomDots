@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # A doommenu wrapper script for system functions.
-export WM="DWM"
+export WM="doomwm"
 case "$(readlink -f /sbin/init)" in
 *systemd*) ctl='systemctl' ;;
 *) ctl='loginctl' ;;
@@ -14,11 +14,11 @@ wmpid() { # This function is needed if there are multiple instances of the windo
 }
 
 case "$(printf "Lock\nLeave $WM\nRenew $WM\nReboot\nPoweroff\nSuspend" | doommenu -i -p 'Action: ')" in
-'Lock') slock ;;
+'Lock') doomlock ;;
 "Leave $WM") kill -TERM "$(wmpid)" ;;
 "Renew $WM") kill -HUP "$(wmpid)" ;;
 'Reboot') $ctl reboot -i ;;
 'Poweroff') $ctl poweroff -i ;;
-'Suspend') slock $ctl suspend -i ;;
+'Suspend') doomlock & sleep 1; $ctl suspend -i ;;
 *) exit 1 ;;
 esac

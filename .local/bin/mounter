@@ -17,7 +17,7 @@ alldrives="$(lsblk -rpo "uuid,name,type,size,label,mountpoint,fstype")"
 allluks="$(echo "$alldrives" | grep crypto_LUKS)" || true
 # Get a list of the LUKS drive UUIDs already decrypted.
 decrypted="$(find /dev/disk/by-id/dm-uuid-CRYPT-LUKS2-* | sed "s|.*LUKS2-||;s|-.*||")"
-# Functioning for formatting drives correctly for dmenu:
+# Functioning for formatting drives correctly for doommenu:
 filter() { sed "s/ /:/g" | awk -F':' '$7==""{printf "%s%s (%s) %s\n",$1,$3,$5,$6}'; }
 
 # Get only LUKS drives that are not decrypted.
@@ -41,15 +41,15 @@ $unopenedluks
 $normalparts" | sed "/^$/d;s/ *$//")"
 test -n "$alldrives"
 
-# Feed all found drives to dmenu and get user choice.
-chosen="$(echo "$alldrives" | dmenu -p "Mount which drive?" -i)"
+# Feed all found drives to doommenu and get user choice.
+chosen="$(echo "$alldrives" | doommenu -p "Mount which drive?" -i)"
 
 # Function for prompting user for a mountpoint.
 getmount() {
-	mp="$(find /mnt /run/media /mount /home -maxdepth 1 -type d 2>/dev/null | dmenu -i -p "Mount this drive where?")"
+	mp="$(find /mnt /run/media /mount /home -maxdepth 1 -type d 2>/dev/null | doommenu -i -p "Mount this drive where?")"
 	test -n "$mp"
 	if [ ! -d "$mp" ]; then
-		mkdiryn=$(printf "No\\nYes" | dmenu -i -p "$mp does not exist. Create it?")
+		mkdiryn=$(printf "No\\nYes" | doommenu -i -p "$mp does not exist. Create it?")
 		[ "$mkdiryn" = "Yes" ] && (mkdir -p "$mp" || sudo -A mkdir -p "$mp")
 	fi
 }
@@ -73,7 +73,7 @@ case "$chosen" in
 	done
 
 	# Decrypt in a terminal window
-	${TERMINAL:-st} -n floatterm -g 60x1 -e sudo cryptsetup open "$chosen" "usb$num"
+	${TERMINAL:-doomterm} -n floatterm -g 60x1 -e sudo cryptsetup open "$chosen" "usb$num"
 	# Check if now decrypted.
 	test -b "/dev/mapper/usb$num"
 
@@ -84,7 +84,7 @@ case "$chosen" in
 
 📱*)
 	getmount
-	echo "OK" | dmenu -i -p "Tap Allow on your phone if it asks for permission and then press enter"
+	echo "OK" | doommenu -i -p "Tap Allow on your phone if it asks for permission and then press enter"
 	chosen="${chosen%%:*}"
 	chosen="${chosen:1}" # This is a bashism.
 	simple-mtpfs --device "$chosen" "$mp"
