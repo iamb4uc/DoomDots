@@ -175,5 +175,5 @@ map <gt> $printf "%s" "$fx" | sed -E 's/^.+\[/https:\/\/piped.video\/watch?v=/' 
 map T $nsxiv -t "$(pwd)" # opens thumbnail mode
 map <c-l> unselect
 
-# Source Bookmarks
+# Source bookmarks
 source "~/.config/lf/shortcutrc"
