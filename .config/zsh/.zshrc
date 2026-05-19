@@ -98,7 +98,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias ......='cd ../../../../..'
-alias rm="rm -rf" # Cause why not
 
 # Applications
 alias v=$EDITOR
