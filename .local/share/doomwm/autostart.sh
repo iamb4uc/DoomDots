@@ -11,7 +11,7 @@ fi
 xset r rate 250 60
 setxkbmap -option caps:escape
 
-setbg "$HOME/Pictures/wallpapers/gruvbox/"
+setbg
 
 pgrep -x doomstatus >/dev/null || doomstatus &
 pgrep -x picom >/dev/null || picom &
