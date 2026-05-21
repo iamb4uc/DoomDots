@@ -126,6 +126,7 @@ alias pyenv="source .env/bin/activate"
 alias vpn="doas openvpn"
 alias THM="doas openvpn ~/.local/share/openvpn/thm.ovpn"
 alias TODO="$EDITOR ~/Documents/TODO.md"
+alias ble=bluetuith
 
 # Git
 alias gini="git init"
