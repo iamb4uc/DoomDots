@@ -19,6 +19,10 @@ case "$(printf "Lock\nLeave $WM\nRenew $WM\nReboot\nPoweroff\nSuspend" | doommen
 "Renew $WM") kill -HUP "$(wmpid)" ;;
 'Reboot') $ctl reboot -i ;;
 'Poweroff') $ctl poweroff -i ;;
-'Suspend') doomlock & sleep 1; $ctl suspend -i ;;
+'Suspend')
+    doomlock &
+    sleep 1
+    $ctl suspend -i
+    ;;
 *) exit 1 ;;
 esac
