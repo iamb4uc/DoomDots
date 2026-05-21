@@ -7,7 +7,7 @@ return {
 	{ "ggandor/flit.nvim", enabled = false },
 	{ "akinsho/bufferline.nvim", enabled = false },
 	{ "folke/tokyonight.nvim", enabled = false },
-	-- { "catppuccin/nvim", enabled = false },
+	{ "catppuccin/nvim", enabled = false },
 	{ "folke/flash.nvim", enabled = false },
 	{ "MagicDuck/grug-far.nvim", enabled = false },
 }

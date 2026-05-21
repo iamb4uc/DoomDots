@@ -2,15 +2,11 @@
 -- GRUVBOX --
 -------------
 return {
-	{ "ellisonleao/gruvbox.nvim" },
-	{ "rebelot/kanagawa.nvim" },
-	{ "NTBBloodbath/doom-one.nvim" },
-	{ "nyoom-engineering/oxocarbon.nvim" },
-	{ "olimorris/onedarkpro.nvim" },
+	{ "ellisonleao/gruvbox.nvim", priority = 1000, config = true },
 	{
 		"LazyVim/LazyVim",
 		opts = {
-			colorscheme = "catppuccin-mocha",
+			colorscheme = "gruvbox",
 			transparent = true,
 			styles = {
 				sidebars = "transparent",

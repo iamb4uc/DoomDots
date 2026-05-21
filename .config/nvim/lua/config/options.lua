@@ -1,32 +1,28 @@
--- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
--- Add any additional options here
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+local vg = vim.g
+local vo = vim.opt
 
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.visualbell = true
-vim.g.autoformat = true
-
--- DOOM ONE CONFIG (enable if you are using doom-one as colorscheme)
--- vim.g.doom_one_cursor_coloring = false
--- vim.g.doom_one_terminal_colors = true
--- vim.g.doom_one_italic_comments = true
--- vim.g.doom_one_enable_treesitter = true
--- vim.g.doom_one_diagnostics_text_color = false
--- vim.g.doom_one_transparent_background = false
--- vim.g.doom_one_pumblend_enable = false
--- vim.g.doom_one_pumblend_transparency = 20
--- vim.g.doom_one_plugin_neorg = true
--- vim.g.doom_one_plugin_barbar = false
--- vim.g.doom_one_plugin_telescope = false
--- vim.g.doom_one_plugin_neogit = true
--- vim.g.doom_one_plugin_nvim_tree = true
--- vim.g.doom_one_plugin_dashboard = true
--- vim.g.doom_one_plugin_startify = true
--- vim.g.doom_one_plugin_whichkey = true
--- vim.g.doom_one_plugin_indent_blankline = true
--- vim.g.doom_one_plugin_vim_illuminate = true
--- vim.g.doom_one_plugin_lspsaga = false
+vg.loaded_netrw = 1
+vg.loaded_netrwPlugin = 1
+vo.tabstop = 4
+vo.shiftwidth = 4
+vo.expandtab = true
+vo.smartindent = true
+vo.breakindent = true
+vo.wrap = false
+vo.linebreak = true
+vo.number = true
+vo.relativenumber = true
+vo.cursorline = true
+vo.signcolumn = "yes"
+vo.scrolloff = 8
+vo.sidescrolloff = 8
+vo.splitbelow = true
+vo.splitright = true
+vo.ignorecase = true
+vo.smartcase = true
+vo.inccommand = "split"
+vo.undofile = true
+vo.updatetime = 200
+vo.timeoutlen = 400
+vo.visualbell = true
+vg.autoformat = true
