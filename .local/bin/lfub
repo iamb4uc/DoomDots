@@ -1,24 +1,60 @@
 #!/bin/sh
 
-# This is a wrapper script for lb that allows it to create image previews with
-# ueberzug. This works in concert with the lf configuration file and the
-# lf-cleaner script.
+# Fast lf launcher with an optional classic ueberzug pixel overlay.
 
 set -e
 
 cleanup() {
-	exec 3>&-
-	rm "$FIFO_UEBERZUG"
+	status=$?
+	trap - HUP INT QUIT TERM PWR EXIT
+	[ "${LFUB_FD_OPENED:-0}" = 1 ] && exec 3>&- || true
+	if [ -n "${LFUB_UEBERZUG_PID:-}" ] && kill -0 "$LFUB_UEBERZUG_PID" 2>/dev/null; then
+		kill "$LFUB_UEBERZUG_PID" 2>/dev/null || true
+		wait "$LFUB_UEBERZUG_PID" 2>/dev/null || true
+	fi
+	[ -n "${FIFO_UEBERZUG:-}" ] && [ -p "$FIFO_UEBERZUG" ] && rm -f "$FIFO_UEBERZUG"
+	exit "$status"
 }
 
-if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-	lf "$@"
+run_lf_plain() {
+	unset FIFO_UEBERZUG
+	/usr/bin/lf "$@"
+}
+
+if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ] || [ -z "${DISPLAY:-}" ]; then
+	run_lf_plain "$@"
 else
-	[ ! -d "$HOME/.cache/lf" ] && mkdir -p "$HOME/.cache/lf"
+	cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/lf"
+	log_file="$cache_dir/ueberzug.log"
+
+	[ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
+	{
+		printf '\n[%s] lfub start pid=%s term=%s display=%s windowid=%s\n' \
+			"$(date '+%F %T')" "$$" "${TERM:-}" "${DISPLAY:-}" "${WINDOWID:-}"
+		if command -v ueberzug >/dev/null 2>&1; then
+			printf 'ueberzug path: %s\n' "$(command -v ueberzug)"
+			ueberzug --version 2>&1 || true
+		else
+			printf 'ueberzug: missing\n'
+		fi
+	} >>"$log_file" 2>&1
+
 	export FIFO_UEBERZUG="$HOME/.cache/lf/ueberzug-$$"
 	mkfifo "$FIFO_UEBERZUG"
-	ueberzug layer -s -p json <"$FIFO_UEBERZUG" &
+	ueberzug layer -p json <"$FIFO_UEBERZUG" >>"$log_file" 2>&1 &
+	LFUB_UEBERZUG_PID=$!
+
+	sleep "${LFUB_UEBERZUG_STARTUP_DELAY:-0.02}"
+	if ! kill -0 "$LFUB_UEBERZUG_PID" 2>/dev/null; then
+		wait "$LFUB_UEBERZUG_PID" 2>>"$log_file" || true
+		printf '[%s] ueberzug exited before lf started, falling back\n' "$(date '+%F %T')" >>"$log_file"
+		rm -f "$FIFO_UEBERZUG"
+		run_lf_plain "$@"
+		exit
+	fi
+
 	exec 3>"$FIFO_UEBERZUG"
+	LFUB_FD_OPENED=1
 	trap cleanup HUP INT QUIT TERM PWR EXIT
-	lf "$@" 3>&-
+	/usr/bin/lf "$@" 3>&-
 fi
