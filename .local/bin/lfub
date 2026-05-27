@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Fast lf launcher with an optional classic ueberzug pixel overlay.
+# Fast lf launcher with classic ueberzug pixel previews.
 
 set -e
 
@@ -21,6 +21,76 @@ run_lf_plain() {
 	/usr/bin/lf "$@"
 }
 
+ueberzug_fixed() {
+	python -c '
+import asyncio
+import concurrent.futures
+import concurrent.futures.thread as cft
+import queue
+import threading
+import weakref
+
+asyncio.set_event_loop(asyncio.new_event_loop())
+
+import ueberzug.thread as ut
+
+def _worker(executor_reference, ctx, work_queue):
+    try:
+        ctx.initialize()
+        while True:
+            try:
+                work_item = work_queue.get_nowait()
+            except queue.Empty:
+                executor = executor_reference()
+                if executor is not None and hasattr(executor, "_idle_semaphore"):
+                    executor._idle_semaphore.release()
+                del executor
+                work_item = work_queue.get(block=True)
+
+            if work_item is not None:
+                work_item.run(ctx)
+                del work_item
+                continue
+
+            executor = executor_reference()
+            if getattr(cft, "_shutdown", False) or executor is None or executor._shutdown:
+                if executor is not None:
+                    executor._shutdown = True
+                work_queue.put(None)
+                return
+            del executor
+    except BaseException:
+        concurrent.futures._base.LOGGER.critical("Exception in worker", exc_info=True)
+    finally:
+        ctx.finalize()
+
+def _adjust_thread_count(self):
+    if hasattr(self, "_idle_semaphore") and self._idle_semaphore.acquire(timeout=0):
+        return
+
+    def weakref_cb(_, q=self._work_queue):
+        q.put(None)
+
+    num_threads = len(self._threads)
+    if num_threads < self._max_workers:
+        thread_name = "%s_%d" % (self, num_threads)
+        ctx = self._create_worker_context()
+        thread = threading.Thread(
+            name=thread_name,
+            target=_worker,
+            args=(weakref.ref(self, weakref_cb), ctx, self._work_queue),
+        )
+        thread.daemon = True
+        thread.start()
+        self._threads.add(thread)
+
+ut.DaemonThreadPoolExecutor._adjust_thread_count = _adjust_thread_count
+
+from ueberzug.__main__ import main
+raise SystemExit(main())
+' "$@"
+}
+
 if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ] || [ -z "${DISPLAY:-}" ]; then
 	run_lf_plain "$@"
 else
@@ -33,15 +103,15 @@ else
 			"$(date '+%F %T')" "$$" "${TERM:-}" "${DISPLAY:-}" "${WINDOWID:-}"
 		if command -v ueberzug >/dev/null 2>&1; then
 			printf 'ueberzug path: %s\n' "$(command -v ueberzug)"
-			ueberzug --version 2>&1 || true
+			ueberzug_fixed version 2>&1 || true
 		else
 			printf 'ueberzug: missing\n'
 		fi
 	} >>"$log_file" 2>&1
 
-	export FIFO_UEBERZUG="$HOME/.cache/lf/ueberzug-$$"
+	export FIFO_UEBERZUG="$cache_dir/ueberzug-$$"
 	mkfifo "$FIFO_UEBERZUG"
-	ueberzug layer -p json <"$FIFO_UEBERZUG" >>"$log_file" 2>&1 &
+	ueberzug_fixed layer -p json <"$FIFO_UEBERZUG" >>"$log_file" 2>&1 &
 	LFUB_UEBERZUG_PID=$!
 
 	sleep "${LFUB_UEBERZUG_STARTUP_DELAY:-0.02}"
