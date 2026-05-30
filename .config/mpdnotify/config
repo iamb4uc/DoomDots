@@ -4,7 +4,7 @@
 # only need to define handle_event() for the deamon
 # to run properly
 #
-# $mydir exists, and it's value is /home/iamb4uc/.config/mpdnotify
+# $mydir exists, and its value is the mpdnotify config directory.
 #
 ###
 
@@ -133,4 +133,3 @@ handle_event() {
 # handle_event() {
 #    mpdnotify &
 # }
-
