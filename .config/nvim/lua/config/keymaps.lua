@@ -17,24 +17,26 @@ end
 map("n", "<leader>fs", ":w<CR>", "Save file")
 map("n", "<leader>fsa", ":wall<CR>", "Save all files")
 map("n", "<leader>qq", ":q<CR>", "Quit")
-map("n", "<leader>Qq", ":q!<CR>", "Force quit")
+map("n", "<leader>qf", ":q!<CR>", "Force quit")
 map("n", "<leader>fsq", ":x<CR>", "Save and quit")
 
 -- Tab splits
 map("n", "<leader>|", ":vsplit<cr>", "create vertical split")
-map("n", "<leader>-", ":split<cr>", "create vertical split")
+map("n", "<leader>-", ":split<cr>", "create horizontal split")
 
-map("n", "<leader>wc", "<C-w><C-c>", "Close window")
+map("n", "<leader>wc", "<C-w>c", "Close window")
 map("n", "<C-l>", "<C-w>l", "Move right")
 map("n", "<C-k>", "<C-w>k", "Move up")
 map("n", "<C-j>", "<C-w>j", "Move down")
 map("n", "<C-h>", "<C-w>h", "Move left")
 
+-- Buffers
+map("n", "H", ":bprevious<CR>", "Previous buffer")
+map("n", "L", ":bnext<CR>", "Next buffer")
+map("n", "<leader>bd", ":bdelete<CR>", "Delete buffer")
+
 -- compiler stuff by The Tech gent Luke Smith
 map("n", "<leader>a", ':! compiler "%:p"<CR><CR>', "Compile file")
-
--- cleanup script for any AI related resume writing, it cleans up citations
-map("n", "<leader>A", ":! resume_checker %<CR>", "Check resume")
 
 -- Open corresponding .pdf/.html or preview
 map("n", "<leader>p", ':! opout "%:p" <CR><CR>', "Open output")
@@ -151,3 +153,10 @@ map("t", "<C-h>", "<C-\\><C-n><C-w>h", "Move to left window")
 map("t", "<C-j>", "<C-\\><C-n><C-w>j", "Move to lower window")
 map("t", "<C-k>", "<C-\\><C-n><C-w>k", "Move to upper window")
 map("t", "<C-l>", "<C-\\><C-n><C-w>l", "Move to right window")
+
+-- zenmode
+map("n", "<leader>zz", ":ZenMode<CR>", "Toggle zen mode")
+
+-- flash
+map("n", "s", ":lua require('flash').jump()<CR>", "Flash jump")
+map("n", "S", ":lua require('flash').treesitter()<CR>", "Flash treesitter")
