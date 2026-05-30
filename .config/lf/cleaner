@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 set -u
 
-if [ -n "${FIFO_UEBERZUG-}" ] && [ -p "$FIFO_UEBERZUG" ] && command -v jq >/dev/null 2>&1; then
-    payload="$(jq -cn --arg identifier "lf-preview" '{action:"remove",identifier:$identifier}')"
-    timeout "${LF_PREVIEW_FIFO_TIMEOUT:-0.08}" sh -c 'printf "%s\n" "$1" >"$2"' sh "$payload" "$FIFO_UEBERZUG" 2>/dev/null || true
-fi
-
-if [ -n "${KITTY_WINDOW_ID-}" ] && command -v kitten >/dev/null 2>&1; then
-    kitten icat --clear --stdin=no >/dev/tty 2>/dev/null || true
-fi
-
-if [ -n "${LF_UEBERZUG_FIFO-}" ] && [ -p "${LF_UEBERZUG_FIFO}" ] && command -v jq >/dev/null 2>&1; then
-    jq -cn --arg identifier "lf-preview" '{action:"remove",identifier:$identifier}' \
-        >"$LF_UEBERZUG_FIFO" 2>/dev/null || true
+if [ -n "${FIFO_UEBERZUG-}" ] && [ -p "$FIFO_UEBERZUG" ]; then
+    payload='{"action":"remove","identifier":"lf-preview"}'
+    timeout "${LF_PREVIEW_FIFO_TIMEOUT:-0.5}" sh -c 'printf "%s\n" "$1" >"$2"' sh "$payload" "$FIFO_UEBERZUG" 2>/dev/null || true
 fi
 
 exit 0

@@ -13,15 +13,18 @@ mkdir -p "$cache_dir"
 
 id="lf-preview"
 text_lines="${LF_PREVIEW_TEXT_LINES:-220}"
-fifo_timeout="${LF_PREVIEW_FIFO_TIMEOUT:-0.08}"
+fifo_timeout="${LF_PREVIEW_FIFO_TIMEOUT:-0.5}"
 thumb_timeout="${LF_PREVIEW_THUMB_TIMEOUT:-1.5}"
 video_timeout="${LF_PREVIEW_VIDEO_TIMEOUT:-1.5}"
 thumb_px="${LF_PREVIEW_THUMB_PX:-900}"
-chafa_colors="${LF_PREVIEW_CHAFA_COLORS:-256}"
-chafa_threads="${LF_PREVIEW_CHAFA_THREADS:-1}"
-chafa_work="${LF_PREVIEW_CHAFA_WORK:-1}"
 
 have() { command -v "$1" >/dev/null 2>&1; }
+
+json_escape() {
+    sed 's/\\/\\\\/g; s/"/\\"/g' <<EOF
+$1
+EOF
+}
 
 realpath_f() {
     readlink -f -- "$1" 2>/dev/null || printf '%s' "$1"
@@ -52,86 +55,24 @@ preview_text() {
     fi
 }
 
-draw_with_kitty() {
-    local img="$1"
-    kitten icat \
-        --stdin=no \
-        --transfer-mode=memory \
-        --place "${w}x${h}@${x}x${y}" \
-        -- "$img" </dev/null >/dev/tty 2>/dev/null
-}
-
 draw_with_ueberzug() {
-    local img="$1" payload
+    local img="$1" path identifier payload
     [ -n "${FIFO_UEBERZUG-}" ] || return 1
     [ -p "$FIFO_UEBERZUG" ] || return 1
     [ -n "${DISPLAY-}" ] || return 1
     [ -z "${WAYLAND_DISPLAY-}" ] || return 1
-    have jq || return 1
 
-    payload="$(jq -cn \
-        --arg path "$img" \
-        --arg identifier "$id" \
-        --argjson x "$x" \
-        --argjson y "$y" \
-        --argjson width "$w" \
-        --argjson height "$h" \
-        '{
-          action: "add",
-          identifier: $identifier,
-          path: $path,
-          x: $x,
-          y: $y,
-          width: $width,
-          height: $height,
-          scaler: "contain"
-        }')"
+    path="$(json_escape "$img")"
+    identifier="$(json_escape "$id")"
+    payload="$(printf '{"action":"add","identifier":"%s","path":"%s","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain"}' \
+        "$identifier" "$path" "$x" "$y" "$w" "$h")"
 
     timeout "$fifo_timeout" sh -c 'printf "%s\n" "$1" >"$2"' sh "$payload" "$FIFO_UEBERZUG" 2>/dev/null
 }
 
-draw_with_ueberzugpp() {
-    local img="$1"
-    [ -n "${LF_UEBERZUG_FIFO-}" ] || return 1
-    [ -p "${LF_UEBERZUG_FIFO}" ] || return 1
-    have jq || return 1
-
-    timeout "$fifo_timeout" jq -cn \
-        --arg path "$img" \
-        --arg identifier "$id" \
-        --argjson x "$x" \
-        --argjson y "$y" \
-        --argjson mw "$w" \
-        --argjson mh "$h" \
-        '{
-          action: "add",
-          identifier: $identifier,
-          path: $path,
-          x: $x,
-          y: $y,
-          max_width: $mw,
-          max_height: $mh,
-          scaler: "fit_contain"
-        }' >"$LF_UEBERZUG_FIFO" 2>/dev/null
-}
-
-draw_with_chafa() {
-    local img="$1"
-    chafa \
-        --probe off \
-        --format symbols \
-        --symbols block+half \
-        --colors "$chafa_colors" \
-        --color-space rgb \
-        --dither none \
-        --preprocess off \
-        --work "$chafa_work" \
-        --threads "$chafa_threads" \
-        --passthrough none \
-        --polite on \
-        --animate off \
-        --size "${w}x${h}" \
-        -- "$img"
+ueberzug_error() {
+    printf 'ueberzug preview is not working properly.\n'
+    printf 'Please check ~/.cache/lf/ueberzug.log or raise an issue.\n'
 }
 
 make_video_thumb() {
@@ -157,24 +98,8 @@ make_video_thumb() {
 draw_image() {
     local img="$1"
 
-    if [ -n "${FIFO_UEBERZUG-}" ]; then
-        draw_with_ueberzug "$img" && exit 1
-    fi
-
-    if [ -n "${KITTY_WINDOW_ID-}" ] && have kitten; then
-        draw_with_kitty "$img" && exit 1
-    fi
-
-    if have ueberzugpp && [ -n "${LF_UEBERZUG_FIFO-}" ]; then
-        draw_with_ueberzugpp "$img" && exit 1
-    fi
-
-    if have chafa; then
-        draw_with_chafa "$img" || true
-        exit 0
-    fi
-
-    file --dereference --brief -- "$img"
+    draw_with_ueberzug "$img" && exit 1
+    ueberzug_error
     exit 0
 }
 
