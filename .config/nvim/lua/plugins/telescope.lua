@@ -2,7 +2,7 @@ return {
 	"nvim-telescope/telescope.nvim",
 	version = "*",
 
-	cmd = "Telescope",
+	cmd = { "Telescope" },
 
 	dependencies = {
 		"nvim-lua/plenary.nvim",
@@ -28,15 +28,36 @@ return {
 
 				mappings = {
 					i = {
+						["<Esc>"] = function(_)
+							vim.cmd("stopinsert")
+						end,
+
+						["<C-c>"] = actions.close,
 						["<C-j>"] = actions.move_selection_next,
 						["<C-k>"] = actions.move_selection_previous,
-						["<Esc>"] = actions.close,
+						["<C-d>"] = actions.preview_scrolling_down,
+						["<C-u>"] = actions.preview_scrolling_up,
 					},
 
 					n = {
 						["q"] = actions.close,
+						["<Esc>"] = actions.close,
+
 						["j"] = actions.move_selection_next,
 						["k"] = actions.move_selection_previous,
+
+						["gg"] = actions.move_to_top,
+						["G"] = actions.move_to_bottom,
+
+						["<C-d>"] = actions.preview_scrolling_down,
+						["<C-u>"] = actions.preview_scrolling_up,
+
+						["<CR>"] = actions.select_default,
+						["<C-v>"] = actions.select_vertical,
+						["<C-x>"] = actions.select_horizontal,
+						["<C-t>"] = actions.select_tab,
+
+						["?"] = actions.which_key,
 					},
 				},
 			},
