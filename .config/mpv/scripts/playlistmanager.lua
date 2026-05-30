@@ -76,7 +76,7 @@ local settings = {
   system = "auto",
 
   --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
-  playlist_savepath = "/home/anon/Documents/",
+  playlist_savepath = (os.getenv("XDG_DOCUMENTS_DIR") or ((os.getenv("HOME") or ".") .. "/Documents")) .. "/",
 
 
   --show playlist or filename every time a new file is loaded 
