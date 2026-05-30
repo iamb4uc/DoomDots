@@ -1,26 +1,38 @@
 #!/bin/sh
+set -eu
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "This script must be run with sudo or as root."
   exit 1
 fi
 
-xbps-install -Suv || true
+if ! command -v xbps-install >/dev/null 2>&1 || ! command -v xbps-remove >/dev/null 2>&1; then
+  echo "This script is for Void Linux systems with xbps installed."
+  exit 1
+fi
+
 xbps-install -S symlinks chkstat || true
-xbps-remove -Oo || true
-vkpurge rm all
-xbps-remove -O || true
-symlinks -rd /
+
+xbps-install -Suv
+xbps-remove -Oo
+xbps-remove -O
+
+if command -v vkpurge >/dev/null 2>&1; then
+  vkpurge rm all || true
+fi
+
+if command -v symlinks >/dev/null 2>&1; then
+  symlinks -r /etc /usr /var 2>/dev/null || true
+fi
+
 xbps-remove -R symlinks || true
-rm -rf /var/cache/*
-rm -rf /tmp/*
 
-for dir in /home/*; do
-  [ -d "$dir/.cache" ] && rm -rf "$dir/.cache/*"
-done
+find /var/log -type f -name "*.log.*" -delete
 
-find /var/log -type f -name "*.log.*" -exec rm -f {} \;
-journalctl --vacuum-time=7d
+if command -v journalctl >/dev/null 2>&1; then
+  journalctl --vacuum-time=7d || true
+fi
+
 xbps-pkgdb -m repolock
 xbps-pkgdb -a
 xbps-reconfigure -a
