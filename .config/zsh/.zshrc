@@ -192,7 +192,6 @@ alias aptrm="doas apt-get remove"
 alias aptautorm="doas apt-get autoremove"
 alias dpkin="doas dpkg -i"
 
-export GPG_TTY=$(tty)
 [ -r /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 [ -r /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ] && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 

@@ -46,12 +46,13 @@ export WALLPAPERS=$HOME/Pictures/wallpapers/
 export WINEPREFIX="$XDG_DATA_HOME"/wineprefixes/default
 export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 export ZSH_COMPDUMP="$XDG_CACHE_HOME/cache/.zcompdump"
+export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
 
+export GPG_TTY=$(tty)
 # Start graphical server on user's current tty if not already running.
-#
 [ "$(tty)" = "/dev/tty1" ] && ! pidof -s Xorg >/dev/null 2>&1 && exec startx "$XINITRC"
 
 export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 [ -f "$XDG_DATA_HOME/env" ] && \. "$XDG_DATA_HOME/env"
