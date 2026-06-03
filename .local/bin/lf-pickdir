@@ -1,0 +1,46 @@
+#!/bin/sh
+
+set -u
+
+prompt="${1:-Directory: }"
+bmfile="${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs"
+
+expand_path() {
+	case "$1" in
+		~) printf '%s\n' "$HOME" ;;
+		~/*) printf '%s/%s\n' "$HOME" "${1#~/}" ;;
+		*) printf '%s\n' "$1" ;;
+	esac
+}
+
+list_bookmarks() {
+	[ -r "$bmfile" ] || return 0
+	sed -e 's/[[:space:]]*#.*//' -e '/^$/d' -e 's/^[^[:space:]]*[[:space:]]*//' "$bmfile" |
+		while IFS= read -r path; do
+			[ -n "$path" ] && expand_path "$path"
+		done
+}
+
+list_fallbacks() {
+	printf '%s\n' "$HOME" "$PWD"
+	for dir in "$HOME"/Desktop "$HOME"/Documents "$HOME"/Downloads "$HOME"/Pictures "$HOME"/Videos "$HOME"/Git; do
+		[ -d "$dir" ] && printf '%s\n' "$dir"
+	done
+	find . -maxdepth 1 -mindepth 1 -type d -printf '%p\n' 2>/dev/null |
+		sed 's#^\./##'
+}
+
+choices=$(
+	{
+		list_bookmarks
+		list_fallbacks
+	} | awk 'NF && !seen[$0]++'
+)
+
+[ -n "$choices" ] || exit 1
+
+if command -v fzf >/dev/null 2>&1 && [ -t 0 ] && [ -t 1 ]; then
+	printf '%s\n' "$choices" | fzf --layout=reverse --height 40% --prompt "$prompt"
+else
+	printf '%s\n' "$choices" | sed -n '1p'
+fi

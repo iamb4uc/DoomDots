@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -u
+
+check() {
+	label="$1"
+	shift
+
+	for cmd do
+		if command -v "$cmd" >/dev/null 2>&1; then
+			printf 'ok      %-18s %s\n' "$label" "$cmd"
+			return 0
+		fi
+	done
+
+	printf 'missing %-18s %s\n' "$label" "$*"
+	return 1
+}
+
+status=0
+
+printf 'lf core\n'
+check lf lf || status=1
+check file file || status=1
+check fzf fzf || status=1
+
+printf '\npreview\n'
+check text bat batcat || true
+check json jq || true
+check images ueberzug chafa viu || true
+check video-thumbs ffmpegthumbnailer || true
+check pdf-text pdftotext || true
+check pdf-image pdftoppm || true
+
+printf '\nopeners\n'
+check terminal doomterm xterm alacritty kitty || true
+check documents zathura xdg-open || true
+check office libreoffice localc || true
+check media mpv || true
+check images nsxiv xdg-open || true
+check trash trash-put gio || true
+check clipboard xclip wl-copy || true
+
+printf '\nmetadata\n'
+check media-info mediainfo exiftool || true
+check documents pandoc docx2txt odt2txt xlsx2csv || true
+check archives 7z bsdtar unzip || true
+
+exit "$status"

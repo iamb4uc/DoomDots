@@ -1,0 +1,89 @@
+#!/bin/sh
+
+set -u
+
+have() {
+	command -v "$1" >/dev/null 2>&1
+}
+
+open_with() {
+	if have "$1"; then
+		setsid -f "$@" >/dev/null 2>&1
+	elif have "${OPENER:-xdg-open}"; then
+		setsid -f "${OPENER:-xdg-open}" "$file" >/dev/null 2>&1
+	fi
+}
+
+open_image_dir() {
+	if ! have nsxiv; then
+		open_with "${OPENER:-xdg-open}" "$file"
+		return
+	fi
+
+	if have rotdir; then
+		rotdir "$file"
+	else
+		find "$(dirname -- "$file")" -maxdepth 1 -type f
+	fi |
+		grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|avif\|tif\|tiff\|ico\)\(_large\)*$" |
+		setsid -f nsxiv -aio 2>/dev/null | while IFS= read -r selected; do
+			[ -n "$selected" ] || continue
+			lf -remote "send select \"$selected\""
+			lf -remote "send toggle"
+		done &
+}
+
+[ "$#" -gt 0 ] || exit 0
+
+for file do
+	mime=$(file --dereference --mime-type --brief -- "$file" 2>/dev/null || printf 'application/octet-stream')
+
+	case "$mime" in
+		application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+			if have localc; then
+				open_with localc "$file"
+			else
+				open_with libreoffice "$file"
+			fi
+			;;
+		image/vnd.djvu|application/pdf|application/postscript|application/epub*)
+			open_with zathura "$file"
+			;;
+		text/*|application/json|inode/x-empty|application/x-subrip|application/pgp-encrypted)
+			"${EDITOR:-vi}" "$file"
+			;;
+		image/x-xcf)
+			open_with gimp "$file"
+			;;
+		image/svg+xml)
+			if have display; then
+				display -- "$file"
+			else
+				open_with "${OPENER:-xdg-open}" "$file"
+			fi
+			;;
+		image/*)
+			open_image_dir
+			;;
+		audio/*|video/x-ms-asf)
+			have mpv && mpv --audio-display=no "$file"
+			;;
+		video/*)
+			open_with mpv "$file" -quiet
+			;;
+		application/vnd.openxmlformats-officedocument.wordprocessingml.document|application/vnd.oasis.opendocument.text|application/vnd.oasis.opendocument.spreadsheet|application/vnd.oasis.opendocument.spreadsheet-template|application/vnd.openxmlformats-officedocument.presentationml.presentation|application/vnd.oasis.opendocument.presentation-template|application/vnd.oasis.opendocument.presentation|application/vnd.ms-powerpoint|application/vnd.oasis.opendocument.graphics|application/vnd.oasis.opendocument.graphics-template|application/vnd.oasis.opendocument.formula|application/vnd.oasis.opendocument.database)
+			open_with libreoffice "$file"
+			;;
+		application/octet-stream)
+			case "${file##*.}" in
+				doc|docx|xls|xlsx|odt|ppt|pptx) open_with libreoffice "$file" ;;
+				ghw) open_with gtkwave "$file" ;;
+				ts) open_with mpv "$file" -quiet ;;
+				*) open_with zathura "$file" ;;
+			esac
+			;;
+		*)
+			open_with "${OPENER:-xdg-open}" "$file"
+			;;
+	esac
+done
