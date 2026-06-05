@@ -16,6 +16,8 @@ text_lines="${LF_PREVIEW_TEXT_LINES:-220}"
 fifo_timeout="${LF_PREVIEW_FIFO_TIMEOUT:-0.5}"
 thumb_timeout="${LF_PREVIEW_THUMB_TIMEOUT:-1.5}"
 video_timeout="${LF_PREVIEW_VIDEO_TIMEOUT:-1.5}"
+meta_timeout="${LF_PREVIEW_META_TIMEOUT:-1.5}"
+list_timeout="${LF_PREVIEW_LIST_TIMEOUT:-1.5}"
 thumb_px="${LF_PREVIEW_THUMB_PX:-900}"
 
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -55,6 +57,12 @@ preview_text() {
     fi
 }
 
+run_timeout() {
+    local secs="$1"
+    shift
+    timeout "$secs" "$@" 2>/dev/null
+}
+
 draw_with_ueberzug() {
     local img="$1" path identifier payload
     [ -n "${FIFO_UEBERZUG-}" ] || return 1
@@ -64,15 +72,11 @@ draw_with_ueberzug() {
 
     path="$(json_escape "$img")"
     identifier="$(json_escape "$id")"
-    payload="$(printf '{"action":"add","identifier":"%s","path":"%s","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain"}' \
+    payload="$(printf \
+        '{"action":"add","identifier":"%s","path":"%s","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain"}' \
         "$identifier" "$path" "$x" "$y" "$w" "$h")"
 
     timeout "$fifo_timeout" sh -c 'printf "%s\n" "$1" >"$2"' sh "$payload" "$FIFO_UEBERZUG" 2>/dev/null
-}
-
-ueberzug_error() {
-    printf 'ueberzug preview is not working properly.\n'
-    printf 'Please check ~/.cache/lf/ueberzug.log or raise an issue.\n'
 }
 
 make_video_thumb() {
@@ -99,8 +103,13 @@ draw_image() {
     local img="$1"
 
     draw_with_ueberzug "$img" && exit 1
-    ueberzug_error
-    exit 0
+    if have chafa; then
+        run_timeout "$meta_timeout" chafa --size="${w}x${h}" -- "$img" && exit 0
+    elif have viu; then
+        run_timeout "$meta_timeout" viu -w "$w" -h "$h" -- "$img" && exit 0
+    fi
+
+    return 1
 }
 
 mime="$(file --dereference --brief --mime-type -- "$file" 2>/dev/null || printf 'application/octet-stream')"
@@ -137,7 +146,7 @@ application/json | application/x-ndjson)
 
 image/svg+xml)
     if have magick; then
-        [ -s "$thumb_png" ] || timeout "$thumb_timeout" magick "$file" -strip -thumbnail "${thumb_px}x${thumb_px}>" "$thumb_png" >/dev/null 2>&1
+        [ -s "$thumb_png" ] || run_timeout "$thumb_timeout" magick "$file" -strip -thumbnail "${thumb_px}x${thumb_px}>" "$thumb_png" >/dev/null
         [ -f "$thumb_png" ] && draw_image "$thumb_png"
     fi
     preview_text "$file"
@@ -145,14 +154,14 @@ image/svg+xml)
 
 image/x-xcf)
     if have magick; then
-        [ -s "$thumb_jpg" ] || timeout "$thumb_timeout" magick "$file[0]" -strip -thumbnail "${thumb_px}x${thumb_px}>" "$thumb_jpg" >/dev/null 2>&1
+        [ -s "$thumb_jpg" ] || run_timeout "$thumb_timeout" magick "$file[0]" -strip -thumbnail "${thumb_px}x${thumb_px}>" "$thumb_jpg" >/dev/null
         [ -f "$thumb_jpg" ] && draw_image "$thumb_jpg"
     fi
     file --dereference --brief -- "$file"
     ;;
 
 image/*)
-    draw_image "$file"
+    draw_image "$file" || file --dereference --brief -- "$file"
     ;;
 
 video/*)
@@ -165,9 +174,9 @@ video/*)
 
 audio/*)
     if have mediainfo; then
-        mediainfo "$file"
+        run_timeout "$meta_timeout" mediainfo "$file"
     elif have exiftool; then
-        exiftool "$file"
+        run_timeout "$meta_timeout" exiftool "$file"
     else
         file -- "$file"
     fi
@@ -183,12 +192,12 @@ application/pdf)
     fi
 
     if have pdftoppm; then
-        [ -s "$thumb_png" ] || timeout "$thumb_timeout" pdftoppm -png -f 1 -singlefile -scale-to "$thumb_px" "$file" "$thumb_base" >/dev/null 2>&1
+        [ -s "$thumb_png" ] || run_timeout "$thumb_timeout" pdftoppm -png -f 1 -singlefile -scale-to "$thumb_px" "$file" "$thumb_base" >/dev/null
         [ -f "$thumb_png" ] && draw_image "$thumb_png"
     fi
 
     if have pdfinfo; then
-        pdfinfo "$file"
+        run_timeout "$meta_timeout" pdfinfo "$file"
     else
         file -- "$file"
     fi
@@ -196,11 +205,11 @@ application/pdf)
 
 application/epub+zip | application/x-mobipocket-ebook)
     if have gnome-epub-thumbnailer; then
-        [ -s "$thumb_jpg" ] || timeout "$thumb_timeout" gnome-epub-thumbnailer "$file" "$thumb_jpg" >/dev/null 2>&1
+        [ -s "$thumb_jpg" ] || run_timeout "$thumb_timeout" gnome-epub-thumbnailer "$file" "$thumb_jpg" >/dev/null
         [ -f "$thumb_jpg" ] && draw_image "$thumb_jpg"
     fi
     if have pandoc; then
-        pandoc -t plain "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" pandoc -t plain "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -208,11 +217,11 @@ application/epub+zip | application/x-mobipocket-ebook)
 
 application/zip | application/x-7z-compressed | application/x-rar | application/x-rar-compressed | application/x-tar | application/gzip | application/x-bzip2 | application/x-xz | application/zstd)
     if have 7z; then
-        7z l -- "$file"
+        run_timeout "$list_timeout" 7z l -- "$file" | sed -n '1,250p'
     elif have bsdtar; then
-        bsdtar -tf "$file"
+        run_timeout "$list_timeout" bsdtar -tf "$file" | sed -n '1,250p'
     elif have unzip; then
-        unzip -l "$file"
+        run_timeout "$list_timeout" unzip -l "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -220,9 +229,9 @@ application/zip | application/x-7z-compressed | application/x-rar | application/
 
 application/vnd.openxmlformats-officedocument.wordprocessingml.document)
     if have docx2txt; then
-        docx2txt "$file" - 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" docx2txt "$file" - | sed -n '1,250p'
     elif have pandoc; then
-        pandoc -t plain "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" pandoc -t plain "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -230,9 +239,9 @@ application/vnd.openxmlformats-officedocument.wordprocessingml.document)
 
 application/vnd.oasis.opendocument.text)
     if have odt2txt; then
-        odt2txt "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" odt2txt "$file" | sed -n '1,250p'
     elif have pandoc; then
-        pandoc -t plain "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" pandoc -t plain "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -240,7 +249,7 @@ application/vnd.oasis.opendocument.text)
 
 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
     if have xlsx2csv; then
-        xlsx2csv "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" xlsx2csv "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -248,7 +257,7 @@ application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
 
 application/vnd.ms-excel)
     if have xls2csv; then
-        xls2csv "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" xls2csv "$file" | sed -n '1,250p'
     else
         file -- "$file"
     fi
@@ -256,9 +265,9 @@ application/vnd.ms-excel)
 
 application/vnd.openxmlformats-officedocument.presentationml.presentation)
     if have pandoc; then
-        pandoc -t plain "$file" 2>/dev/null | sed -n '1,250p'
+        run_timeout "$meta_timeout" pandoc -t plain "$file" | sed -n '1,250p'
     else
-        unzip -p "$file" 'ppt/slides/slide*.xml' 2>/dev/null |
+        run_timeout "$meta_timeout" unzip -p "$file" 'ppt/slides/slide*.xml' |
             sed 's/<[^>]*>/ /g' |
             tr -s ' ' |
             sed -n '1,250p'
@@ -269,7 +278,7 @@ application/vnd.openxmlformats-officedocument.presentationml.presentation)
     file --dereference --brief -- "$file"
     printf '\n'
     if have exiftool; then
-        exiftool "$file" 2>/dev/null | sed -n '1,80p'
+        run_timeout "$meta_timeout" exiftool "$file" | sed -n '1,80p'
     fi
     ;;
 esac

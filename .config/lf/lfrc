@@ -1,5 +1,5 @@
 # Basic vars
-set shellopts '-eu'
+set shellopts '-u'
 set ifs "\n"
 set scrolloff 10
 set icons true
@@ -14,32 +14,23 @@ set autoquit true
 
 # cmds/functions
 cmd open ${{
-    case $(file --mime-type "$(readlink -f $f)" -b) in
-	application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) localc $fx ;;
-	image/vnd.djvu|application/pdf|application/postscript) setsid -f zathura $fx >/dev/null 2>&1 ;;
-        text/*|application/json|inode/x-empty|application/x-subrip) $EDITOR $fx;;
-	image/x-xcf) setsid -f gimp $f >/dev/null 2>&1 ;;
-	image/svg+xml) display -- $f ;;
-	image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|avif\|tif\|ico\)\(_large\)*$" |
-		setsid -f nsxiv -aio 2>/dev/null | while read -r file; do
-			[ -z "$file" ] && continue
-			lf -remote "send select \"$file\""
-			lf -remote "send toggle"
-		done &
-		;;
-	audio/*|video/x-ms-asf) mpv --audio-display=no $f ;;
-	video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-	application/pdf|application/vnd.djvu|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
-	application/pgp-encrypted) $EDITOR $fx ;;
-	application/vnd.openxmlformats-officedocument.wordprocessingml.document|application/vnd.oasis.opendocument.text|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application/vnd.oasis.opendocument.spreadsheet|application/vnd.oasis.opendocument.spreadsheet-template|application/vnd.openxmlformats-officedocument.presentationml.presentation|application/vnd.oasis.opendocument.presentation-template|application/vnd.oasis.opendocument.presentation|application/vnd.ms-powerpoint|application/vnd.oasis.opendocument.graphics|application/vnd.oasis.opendocument.graphics-template|application/vnd.oasis.opendocument.formula|application/vnd.oasis.opendocument.database) setsid -f libreoffice $fx >/dev/null 2>&1 ;;
-        application/octet-stream) case ${f##*.} in
-			doc|docx|xls|xlsx|odt|ppt|pptx) setsid -f libreoffice $fx >/dev/null 2>&1 ;;
-			ghw) setsid -f gtkwave $f >/dev/null 2>&1 ;;
-			ts) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-			*) setsid -f zathura $fx >/dev/null 2>&1 ;;
-	   	esac ;;
-	*) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
-    esac
+	helper="$HOME/.local/bin/lf-open"
+	if [ ! -x "$helper" ]; then
+		config="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc" 2>/dev/null || printf '%s' "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc")"
+		helper="$(dirname "$config")/../../.local/bin/lf-open"
+	fi
+	[ -x "$helper" ] || { printf 'lf-open not found\n'; exit 1; }
+	"$helper" $fx
+}}
+
+cmd doctor ${{
+	helper="$HOME/.local/bin/lf-doctor"
+	if [ ! -x "$helper" ]; then
+		config="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc" 2>/dev/null || printf '%s' "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc")"
+		helper="$(dirname "$config")/../../.local/bin/lf-doctor"
+	fi
+	[ -x "$helper" ] || { printf 'lf-doctor not found\n'; exit 1; }
+	"$helper"
 }}
 
 cmd mkdir $mkdir -p "$@"
@@ -49,40 +40,53 @@ cmd extract ${{
 	set -f
 	printf "%s\n\t" "$fx"
 	printf "extract?[y/N]"
-	read ans
-	[ $ans = "y" ] && {
-		case $fx in
-			*.tar.bz2)   tar xjf $fx     ;;
-			*.tar.gz)    tar xzf $fx     ;;
-			*.bz2)       bunzip2 $fx     ;;
-			*.rar)       unrar e $fx     ;;
-			*.gz)        gunzip $fx      ;;
-			*.tar)       tar xf $fx      ;;
-			*.tbz2)      tar xjf $fx     ;;
-			*.tgz)       tar xzf $fx     ;;
-			*.zip)       unzip $fx       ;;
-			*.Z)         uncompress $fx  ;;
-			*.7z)        7z x $fx        ;;
-			*.tar.xz)    tar xf $fx      ;;
-		esac
+	read -r ans
+	[ "${ans:-}" = "y" ] && {
+		for file in $fx; do
+			case "$file" in
+				*.tar.bz2|*.tbz2) tar xjf "$file" ;;
+				*.tar.gz|*.tgz)   tar xzf "$file" ;;
+				*.tar.xz|*.tar)   tar xf "$file"  ;;
+				*.bz2)            bunzip2 "$file" ;;
+				*.rar)            unrar e "$file" ;;
+				*.gz)             gunzip "$file"  ;;
+				*.zip)            unzip "$file"   ;;
+				*.Z)              uncompress "$file" ;;
+				*.7z)             7z x "$file"    ;;
+			esac
+		done
 	}
 }}
 
-cmd delete ${{
+cmd trash ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	set -f
 	printf "%s\n\t" "$fx"
-	printf "delete?[y/N]"
-	read ans
-	[ $ans = "y" ] && rm -rf -- $fx
+	printf "trash?[y/N]"
+	read -r ans
+	[ "${ans:-}" = "y" ] && {
+		if command -v trash-put >/dev/null 2>&1; then
+			trash-put -- $fx
+		elif command -v gio >/dev/null 2>&1; then
+			gio trash -- $fx
+		else
+			printf "trash command not found\n"
+			exit 1
+		fi
+	}
 }}
 
 cmd moveto ${{
 	set -f
 	clear; tput cup $(($(tput lines)/3))
-	dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --layout=reverse --height 40% --prompt 'Move to where? ' | sed 's|~|$HOME|')
-	[ -z "$dest" ] && exit
-	destpath=$(eval printf '%s' \"$dest\")
+	helper="$HOME/.local/bin/lf-pickdir"
+	if [ ! -x "$helper" ]; then
+		config="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc" 2>/dev/null || printf '%s' "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc")"
+		helper="$(dirname "$config")/../../.local/bin/lf-pickdir"
+	fi
+	[ -x "$helper" ] || { printf 'lf-pickdir not found\n'; exit 1; }
+	destpath=$("$helper" 'Move to where? ') || exit 1
+	[ -n "$destpath" ] || exit
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	echo "From:"
 	echo "$fx" | sed 's/^/   /'
@@ -92,15 +96,20 @@ cmd moveto ${{
 	for x in $fx; do
 		mv -iv "$x" "$destpath"
 	done &&
-	notify-send "🚚 File(s) moved." "File(s) moved to $destpath."
+	{ command -v notify-send >/dev/null 2>&1 && notify-send "File(s) moved." "File(s) moved to $destpath."; true; }
 }}
 
 cmd copyto ${{
 	set -f
 	clear; tput cup $(($(tput lines)/3))
-	dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --layout=reverse --height 40% --prompt 'Copy to where? ' | sed 's|~|$HOME|')
-	[ -z "$dest" ] && exit
-	destpath=$(eval printf '%s' \"$dest\")
+	helper="$HOME/.local/bin/lf-pickdir"
+	if [ ! -x "$helper" ]; then
+		config="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc" 2>/dev/null || printf '%s' "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc")"
+		helper="$(dirname "$config")/../../.local/bin/lf-pickdir"
+	fi
+	[ -x "$helper" ] || { printf 'lf-pickdir not found\n'; exit 1; }
+	destpath=$("$helper" 'Copy to where? ') || exit 1
+	[ -n "$destpath" ] || exit
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	echo "From:"
 	echo "$fx" | sed 's/^/   /'
@@ -110,7 +119,7 @@ cmd copyto ${{
 	for x in $fx; do
 		cp -ivr "$x" "$destpath"
 	done &&
-	notify-send "📋 File(s) copied." "File(s) copied to $destpath."
+	{ command -v notify-send >/dev/null 2>&1 && notify-send "File(s) copied." "File(s) copied to $destpath."; true; }
 }}
 
 cmd setbg "$1"
@@ -118,12 +127,13 @@ cmd setbg "$1"
 cmd bulkrename ${{
     tmpfile_old="$(mktemp)"
     tmpfile_new="$(mktemp)"
+    trap 'rm -f "$tmpfile_old" "$tmpfile_new"' EXIT HUP INT TERM
 
-    [ -n "$fs" ] && fs=$(basename -a $fs) || fs=$(ls)
+    [ -n "${fs:-}" ] && fs=$(basename -a $fs) || fs=$(ls)
 
     echo "$fs" > "$tmpfile_old"
     echo "$fs" > "$tmpfile_new"
-    $EDITOR "$tmpfile_new"
+    "${EDITOR:-vi}" "$tmpfile_new"
 
     [ "$(wc -l < "$tmpfile_old")" -eq "$(wc -l < "$tmpfile_new")" ] || { rm -f "$tmpfile_old" "$tmpfile_new"; exit 1; }
 
@@ -133,15 +143,60 @@ cmd bulkrename ${{
     done
 
     rm -f "$tmpfile_old" "$tmpfile_new"
+    trap - EXIT HUP INT TERM
     lf -remote "send $id unselect"
 }}
 
+cmd jump ${{
+	helper="$HOME/.local/bin/lf-pickdir"
+	if [ ! -x "$helper" ]; then
+		config="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc" 2>/dev/null || printf '%s' "${XDG_CONFIG_HOME:-$HOME/.config}/lf/lfrc")"
+		helper="$(dirname "$config")/../../.local/bin/lf-pickdir"
+	fi
+	[ -x "$helper" ] || { printf 'lf-pickdir not found\n'; exit 1; }
+	destpath=$("$helper" 'Jump to where? ') || exit 1
+	[ -n "$destpath" ] || exit
+	lf -remote "send $id cd \"$destpath\""
+}}
+
+cmd fzf-select ${{
+	command -v fzf >/dev/null 2>&1 || exit 1
+	file=$(find . -maxdepth 1 -mindepth 1 -printf '%P\n' | fzf --layout=reverse --height 40%)
+	[ -n "$file" ] && lf -remote "send $id select \"$file\""
+}}
+
+cmd clip-path ${{
+	command -v xclip >/dev/null 2>&1 || exit 1
+	printf "%s" "$fx" | xclip -selection clipboard
+}}
+
+cmd clip-name ${{
+	command -v xclip >/dev/null 2>&1 || exit 1
+	printf "%s" "$fx" | sed 's/.*\///' | xclip -selection clipboard
+}}
+
+cmd clip-youtube ${{
+	command -v xclip >/dev/null 2>&1 || exit 1
+	printf "%s" "$fx" | sed -E 's/^.+\[/https:\/\/www.youtube.com\/watch?v=/' | sed -E 's/\]\..+//' | xclip -selection clipboard
+}}
+
+cmd clip-piped ${{
+	command -v xclip >/dev/null 2>&1 || exit 1
+	printf "%s" "$fx" | sed -E 's/^.+\[/https:\/\/piped.video\/watch?v=/' | sed -E 's/\]\..+//' | xclip -selection clipboard
+}}
+
+cmd thumbs ${{
+	command -v nsxiv >/dev/null 2>&1 || exit 1
+	setsid -f nsxiv -t "$(pwd)" >/dev/null 2>&1
+}}
+
 # Bindings
-map <c-f> $lf -remote "send $id select \"$(fzf)\""
-map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' ${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs | fzf)"
+map <c-f> fzf-select
+map J jump
 map <c-h> cd ~
 map g top
-map D delete
+map d cut
+map D trash
 map E extract
 map C copyto
 map M moveto
@@ -166,13 +221,13 @@ map <c-n> down
 map <c-p> up
 map V push :!nvim<space>
 
-map W $setsid -f $TERMINAL >/dev/null 2>&1
+map W $setsid -f "${TERMINAL:-doomterm}" >/dev/null 2>&1
 
-map U $printf "%s" "$fx" | xclip -selection clipboard
-map u $printf "%s" "$fx" | sed 's/.*\///' | xclip -selection clipboard
-map . $printf "%s" "$fx" | sed -E 's/^.+\[/https:\/\/www.youtube.com\/watch?v=/' | sed -E 's/\]\..+//' | xclip -selection clipboard
-map <gt> $printf "%s" "$fx" | sed -E 's/^.+\[/https:\/\/piped.video\/watch?v=/' | sed -E 's/\]\..+//' | xclip -selection clipboard
-map T $nsxiv -t "$(pwd)" # opens thumbnail mode
+map U clip-path
+map u clip-name
+map . clip-youtube
+map <gt> clip-piped
+map T thumbs
 map <c-l> unselect
 
 # Source bookmarks

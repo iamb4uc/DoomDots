@@ -1,0 +1,43 @@
+# DoomDots lf colors.
+# Format follows lf's colors file syntax: pattern style.
+
+di 01;34
+ln 01;36
+or 01;31
+ex 01;32
+fi 00
+
+*.md 34
+*.txt 37
+*.log 33
+*.json 36
+*.toml 36
+*.yaml 36
+*.yml 36
+*.sh 32
+
+*.jpg 35
+*.jpeg 35
+*.png 35
+*.webp 35
+*.gif 35
+*.svg 35
+
+*.mp3 36
+*.flac 36
+*.wav 36
+*.mp4 35
+*.mkv 35
+*.webm 35
+
+*.zip 33
+*.tar 33
+*.gz 33
+*.xz 33
+*.7z 33
+*.rar 33
+
+*.pdf 31
+*.epub 31
+*.docx 31
+*.xlsx 31
