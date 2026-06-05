@@ -9,8 +9,6 @@ export PATH="$PATH:${$(find ~/.local/bin -type d -printf %p:)%%:}:${$(find ~/.lo
 # Default Programs
 export EDITOR="nvim"
 export VISUAL="nvim"
-export TERM="alacritty"
-export TERMINAL="alacritty"
 export BROWSER="firefox"
 export READER="zathura"
 export FILEBROWSER="lfub"
@@ -32,8 +30,13 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
 export ICEAUTHORITY="$XDG_CACHE_HOME"/ICEauthority
+
 export XAUTHORITY="$XDG_RUNTIME_DIR"/Xauthority
+[ -n "$XDG_RUNTIME_DIR" ] && [ ! -e "$XAUTHORITY" ] && : >"$XAUTHORITY"
+chmod 600 "$XAUTHORITY" 2>/dev/null
+
 export XINITRC="${XDG_CONFIG_HOME:-$HOME/.config}/x11/xinitrc"
+
 export CARGO_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/cargo"
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
 export TEXMFHOME=$XDG_DATA_HOME/texmf
