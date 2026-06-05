@@ -7,9 +7,9 @@ BACKUP_DIR ?= $(PREFIX)/.dotfiles-backup/$(shell date +%Y%m%d%H%M%S)
 CONFIG_LINKS := $(filter-out .config/README.md,$(patsubst .config/%,.config/%,$(wildcard .config/*)))
 LOCAL_LINKS := $(patsubst .local/%,.local/%,$(wildcard .local/*))
 LINKS := .zprofile $(CONFIG_LINKS) $(LOCAL_LINKS)
-EXECUTABLES := $(wildcard .local/bin/*) .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/icons .config/lf/lfrc .config/lf/preview .config/lf/scope .config/sxiv/exec/key-handler
+EXECUTABLES := $(wildcard .local/bin/*) .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/icons .config/lf/lfrc .config/lf/preview .config/sxiv/exec/key-handler
 
-.PHONY: all help install dirs link chmod uninstall clean lint status
+.PHONY: all help install dirs link chmod uninstall clean lint doctor status
 
 all: install
 
@@ -20,6 +20,7 @@ help:
 		'  make uninstall  Remove symlinks that point back to this repo' \
 		'  make clean      Remove generated logs, caches, and runtime state' \
 		'  make lint       Syntax-check shell scripts' \
+		'  make doctor     Check lf helper dependencies' \
 		'  make status     Show git status'
 
 install: clean dirs link chmod
@@ -87,7 +88,7 @@ clean:
 
 lint:
 	@set -eu; \
-	for file in .local/bin/* .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/preview .config/lf/scope .config/sxiv/exec/key-handler; do \
+	for file in .local/bin/* .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/preview .config/sxiv/exec/key-handler; do \
 		[ -f "$$file" ] || continue; \
 		case "$$(head -n 1 "$$file")" in \
 			*python*|*ruby*) continue ;; \
@@ -96,6 +97,9 @@ lint:
 		esac; \
 	done
 	@printf 'shell syntax checks passed\n'
+
+doctor:
+	@.local/bin/lf-doctor
 
 status:
 	@git status --short
