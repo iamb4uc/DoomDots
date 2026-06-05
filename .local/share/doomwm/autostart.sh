@@ -15,5 +15,8 @@ setbg
 
 pgrep -x doomstatus >/dev/null || doomstatus &
 pgrep -x picom >/dev/null || picom &
+if command -v redshift >/dev/null 2>&1 && ! pgrep -x redshift >/dev/null; then
+    redshift &
+fi
 pgrep -x syncthing >/dev/null || syncthing &
 pgrep -x mpd >/dev/null || mpd &
