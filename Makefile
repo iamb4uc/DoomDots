@@ -5,7 +5,7 @@ PREFIX ?= $(HOME)
 BACKUP_DIR ?= $(PREFIX)/.dotfiles-backup/$(shell date +%Y%m%d%H%M%S)
 
 CONFIG_LINKS := $(filter-out .config/README.md,$(patsubst .config/%,.config/%,$(wildcard .config/*)))
-LOCAL_LINKS := $(patsubst .local/%,.local/%,$(wildcard .local/*))
+LOCAL_LINKS := $(shell find .local/bin .local/share/doomwm .local/share/fonts -type f 2>/dev/null | sort)
 LINKS := .zprofile $(CONFIG_LINKS) $(LOCAL_LINKS)
 EXECUTABLES := $(wildcard .local/bin/*) .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/icons .config/lf/lfrc .config/lf/preview .config/sxiv/exec/key-handler
 
@@ -34,6 +34,8 @@ dirs:
 		"$(PREFIX)/.config" \
 		"$(PREFIX)/.cache" \
 		"$(PREFIX)/.local" \
+		"$(PREFIX)/.local/bin" \
+		"$(PREFIX)/.local/share" \
 		"$(PREFIX)/.local/state"
 
 link:
@@ -114,7 +116,10 @@ check-install:
 	$(MAKE) PREFIX="$$tmp" install >/dev/null; \
 	test "$$(readlink "$$tmp/.zprofile")" = "$(REPO)/.zprofile"; \
 	test "$$(readlink "$$tmp/.config/zsh")" = "$(REPO)/.config/zsh"; \
-	test "$$(readlink "$$tmp/.local/bin")" = "$(REPO)/.local/bin"; \
+	test -d "$$tmp/.local/bin"; \
+	test "$$(readlink "$$tmp/.local/bin/lfub")" = "$(REPO)/.local/bin/lfub"; \
+	test "$$(readlink "$$tmp/.local/share/doomwm/autostart.sh")" = "$(REPO)/.local/share/doomwm/autostart.sh"; \
+	test "$$(readlink "$$tmp/.local/share/fonts/NerdFonts/SymbolsNerdFontMono-Regular.ttf")" = "$(REPO)/.local/share/fonts/NerdFonts/SymbolsNerdFontMono-Regular.ttf"; \
 	printf 'install check passed: %s\n' "$$tmp"
 
 doctor:
