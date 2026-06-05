@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -u
+
+check() {
+	label="$1"
+	shift
+
+	for cmd do
+		if command -v "$cmd" >/dev/null 2>&1; then
+			printf 'ok      %-18s %s\n' "$label" "$cmd"
+			return 0
+		fi
+	done
+
+	printf 'missing %-18s %s\n' "$label" "$*"
+	return 1
+}
+
+status=0
+
+printf 'doom chain\n'
+check window-manager doomwm || status=1
+check menu doommenu || status=1
+check menu-run doommenu_run || status=1
+check terminal doomterm || status=1
+check status doomstatus || status=1
+check lock doomlock || status=1
+
+printf '\nsession\n'
+check xrandr xrandr || status=1
+check wallpaper setbg || status=1
+check compositor picom || true
+check redshift redshift || true
+check audio pulseaudio || true
+check keyboard setxkbmap || true
+
+printf '\nfile workflow\n'
+.local/bin/lf-doctor || status=1
+
+exit "$status"

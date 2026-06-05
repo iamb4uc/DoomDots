@@ -9,7 +9,7 @@ LOCAL_LINKS := $(patsubst .local/%,.local/%,$(wildcard .local/*))
 LINKS := .zprofile $(CONFIG_LINKS) $(LOCAL_LINKS)
 EXECUTABLES := $(wildcard .local/bin/*) .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/icons .config/lf/lfrc .config/lf/preview .config/sxiv/exec/key-handler
 
-.PHONY: all help install dirs link chmod uninstall clean lint doctor status
+.PHONY: all help install dirs link chmod uninstall clean lint lint-sh lint-zsh check-install doctor status
 
 all: install
 
@@ -20,7 +20,10 @@ help:
 		'  make uninstall  Remove symlinks that point back to this repo' \
 		'  make clean      Remove generated logs, caches, and runtime state' \
 		'  make lint       Syntax-check shell scripts' \
-		'  make doctor     Check lf helper dependencies' \
+		'  make lint-sh    Syntax-check sh/bash scripts' \
+		'  make lint-zsh   Syntax-check zsh config' \
+		'  make check-install  Test install into a temp HOME' \
+		'  make doctor     Check desktop command dependencies' \
 		'  make status     Show git status'
 
 install: clean dirs link chmod
@@ -86,7 +89,10 @@ clean:
 		.config/zsh/.zcompdump*
 	@printf 'cleaned generated dotfile state\n'
 
-lint:
+lint: lint-sh lint-zsh
+	@printf 'syntax checks passed\n'
+
+lint-sh:
 	@set -eu; \
 	for file in .local/bin/* .local/share/doomwm/autostart.sh .config/lf/cleaner .config/lf/preview .config/sxiv/exec/key-handler; do \
 		[ -f "$$file" ] || continue; \
@@ -96,10 +102,23 @@ lint:
 			*) sh -n "$$file" ;; \
 		esac; \
 	done
-	@printf 'shell syntax checks passed\n'
+	@printf 'sh syntax checks passed\n'
+
+lint-zsh:
+	@zsh -n .zprofile .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/lib/*.zsh .config/zsh/env/*.zsh .config/zsh/options/*.zsh .config/zsh/functions/*.zsh .config/zsh/aliases/*.zsh .config/zsh/plugins/*.zsh
+	@printf 'zsh syntax checks passed\n'
+
+check-install:
+	@set -eu; \
+	tmp="$$(mktemp -d)"; \
+	$(MAKE) PREFIX="$$tmp" install >/dev/null; \
+	test "$$(readlink "$$tmp/.zprofile")" = "$(REPO)/.zprofile"; \
+	test "$$(readlink "$$tmp/.config/zsh")" = "$(REPO)/.config/zsh"; \
+	test "$$(readlink "$$tmp/.local/bin")" = "$(REPO)/.local/bin"; \
+	printf 'install check passed: %s\n' "$$tmp"
 
 doctor:
-	@.local/bin/lf-doctor
+	@.local/bin/doomdots-doctor
 
 status:
 	@git status --short
