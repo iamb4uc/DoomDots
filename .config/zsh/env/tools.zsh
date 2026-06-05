@@ -1,0 +1,21 @@
+export CARGO_HOME="${CARGO_HOME:-$XDG_DATA_HOME/cargo}"
+export GOPATH="${GOPATH:-$XDG_DATA_HOME/go}"
+export RUSTUP_HOME="${RUSTUP_HOME:-$XDG_DATA_HOME/rustup}"
+export NVM_DIR="${NVM_DIR:-$XDG_CONFIG_HOME/nvm}"
+export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+
+export GNUPGHOME="${GNUPGHOME:-$XDG_DATA_HOME/gnupg}"
+export GTK2_RC_FILES="${GTK2_RC_FILES:-$XDG_CONFIG_HOME/gtk-2.0/gtkrc}"
+export LESSHISTFILE="${LESSHISTFILE:-$XDG_CACHE_HOME/less/history}"
+export ICEAUTHORITY="${ICEAUTHORITY:-$XDG_CACHE_HOME/ICEauthority}"
+export WGETRC="${WGETRC:-$XDG_CONFIG_HOME/wgetrc}"
+export WINEPREFIX="${WINEPREFIX:-$XDG_DATA_HOME/wineprefixes/default}"
+export NPM_CONFIG_USERCONFIG="${NPM_CONFIG_USERCONFIG:-$XDG_CONFIG_HOME/npm/npmrc}"
+
+export TEXMFHOME="${TEXMFHOME:-$XDG_DATA_HOME/texmf}"
+export TEXMFVAR="${TEXMFVAR:-$XDG_CACHE_HOME/texlive/texmf-var}"
+export TEXMFCONFIG="${TEXMFCONFIG:-$XDG_CONFIG_HOME/texlive/texmf-config}"
+export ZSH_COMPDUMP="${ZSH_COMPDUMP:-$XDG_CACHE_HOME/zsh/zcompdump}"
+
+[ -r "$CARGO_HOME/env" ] && . "$CARGO_HOME/env"
+[ -f "$XDG_DATA_HOME/env" ] && . "$XDG_DATA_HOME/env"
