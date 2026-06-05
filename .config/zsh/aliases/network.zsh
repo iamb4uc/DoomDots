@@ -1,0 +1,8 @@
+alias pingg="ping 8.8.8.8"
+alias pingc="ping -c 5"
+alias digg="dig +short"
+alias headers="curl -I"
+alias portsopen="ss -ltnp"
+alias listen="ss -tulpn"
+alias wgetc="wget -c"
+alias curlh="curl -I"

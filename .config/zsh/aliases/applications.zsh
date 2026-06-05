@@ -25,3 +25,7 @@ alias vpn="doas openvpn"
 alias THM="doas openvpn ~/.local/share/openvpn/thm.ovpn"
 alias TODO="$EDITOR ~/Documents/TODO.md"
 alias ble=bluetuith
+alias q="exit"
+alias reload="source ${ZDOTDIR:-$HOME/.config/zsh}/.zshrc"
+alias weather="curl wttr.in"
+alias open="$FILEBROWSER"

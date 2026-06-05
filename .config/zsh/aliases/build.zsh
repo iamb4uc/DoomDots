@@ -1,3 +1,7 @@
 alias mc="doas make clean"
 alias mci="doas make install"
 alias mk="make"
+alias mkt="make test"
+alias mkl="make lint"
+alias mkr="make run"
+alias mkc="make clean"
