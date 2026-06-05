@@ -39,8 +39,8 @@ if [[ -o interactive ]]; then
     _doomdots_lazy_complete() {
         _doomdots_load_completion
         bindkey '^I' expand-or-complete
-        zle -D _doomdots_lazy_complete
         zle expand-or-complete
+        unfunction _doomdots_lazy_complete 2>/dev/null
     }
 
     zle -N _doomdots_lazy_complete
