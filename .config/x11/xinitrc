@@ -1,1 +1,2 @@
-exec dbus-run-session doomwm
+#!/bin/sh
+exec dbus-run-session -- doomwm
