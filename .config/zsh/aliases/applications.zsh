@@ -1,0 +1,27 @@
+alias v=$EDITOR
+alias vi=$EDITOR
+alias vim=$EDITOR
+alias e=$EDITOR
+alias lf=lfub
+alias du=dust
+alias nf="neofetch"
+alias wget=wget --hsts-file="$XDG_DATA_HOME/wget-hsts"
+alias cat=bat
+alias sudo=doas
+alias up="uptime -p"
+alias econ="nvim ~/.config/."
+alias untar="tar -xvzf"
+alias yt="yt-dlp --add-metadata -i"
+alias yta="yt --audio-format flac"
+alias peaclock="peaclock --config-dir ~/.config/peaclock"
+alias wal="lf $WALLPAPERS"
+alias spotdl="spotdl --output-format flac"
+alias rawtojpg="find . -type f \( -iname '*.raw' -o -iname '*.nef' \) -exec sh -c 'darktable-cli {} ${0%.*}.jpg' {} \; -delete"
+alias snc="rsync -avP --partial"
+alias btc="bluetoothctl"
+alias screc="ffmpeg -video_size 1920x1080 -framerate 60 -f x11grab -c:v libx264 -i :0.0"
+alias pyenv="source .env/bin/activate"
+alias vpn="doas openvpn"
+alias THM="doas openvpn ~/.local/share/openvpn/thm.ovpn"
+alias TODO="$EDITOR ~/Documents/TODO.md"
+alias ble=bluetuith

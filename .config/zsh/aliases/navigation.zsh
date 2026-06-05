@@ -1,0 +1,11 @@
+alias l=eza
+alias ls=eza
+alias la="eza -a"
+alias lt="eza --tree"
+alias ll="eza -l"
+alias lla="eza -la"
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias ......='cd ../../../../..'

@@ -1,0 +1,6 @@
+alias t="tmux"
+alias ta="tmux a -t"
+alias tls="tmux ls"
+alias tn="tmux new -t"
+alias tks="tmux kill-server"
+alias ts="tmux source $HOME/.config/tmux/tmux.conf"

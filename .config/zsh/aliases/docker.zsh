@@ -1,0 +1,8 @@
+alias dps="docker ps"
+alias dpsa="docker ps -a"
+alias dr="docker run"
+alias dei="docker exec -it"
+alias dcd="docker compose down"
+alias dcu="docker compose up"
+alias dcud="docker compose up -d"
+alias dcudr="docker compose up -d --remove-orphans"
