@@ -1,22 +1,51 @@
 #!/bin/sh
 
-pgrep -x pulseaudio >/dev/null || pulseaudio -D
+run_once() {
+    name="$1"
+    shift
 
-if xrandr | grep -q '^HDMI-A-0 connected'; then
-    xrandr --output HDMI-A-0 --primary --mode 1920x1080 --rate 75 --output eDP --off
-else
-    xrandr --output eDP --primary --mode 1920x1080 --rate 60
-fi
+    if ! pgrep -x "$name" >/dev/null; then
+        "$@" &
+    fi
+}
 
-xset r rate 250 60
-setxkbmap -option caps:escape
+setup_audio() {
+    pulseaudio --check >/dev/null 2>&1 || pulseaudio --start
+}
 
-setbg
+setup_display() {
+    if xrandr | grep -q '^HDMI-A-0 connected'; then
+        xrandr --output HDMI-A-0 --primary --mode 1920x1080 --rate 75 --output eDP --off
+        return
+    fi
 
-pgrep -x doomstatus >/dev/null || doomstatus &
-pgrep -x picom >/dev/null || picom &
-if command -v redshift >/dev/null 2>&1 && ! pgrep -x redshift >/dev/null; then
-    redshift &
-fi
-pgrep -x syncthing >/dev/null || syncthing &
-pgrep -x mpd >/dev/null || mpd &
+    if xrandr | grep -q '^eDP connected'; then
+        xrandr --output eDP --primary --mode 1920x1080 --rate 60
+        return
+    fi
+
+    primary="$(xrandr | awk '/ connected/{print $1; exit}')"
+    [ -n "$primary" ] && xrandr --output "$primary" --primary --auto
+}
+
+setup_input() {
+    xset r rate 250 60
+    setxkbmap -option caps:escape
+}
+
+start_desktop() {
+    setbg
+
+    run_once doomstatus doomstatus
+    run_once picom picom
+    if command -v redshift >/dev/null 2>&1; then
+        run_once redshift redshift
+    fi
+    run_once syncthing syncthing
+    run_once mpd mpd
+}
+
+setup_audio
+setup_display
+setup_input
+start_desktop
