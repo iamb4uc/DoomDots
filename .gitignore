@@ -24,3 +24,4 @@
 /playlists/
 /pid
 /watch_later/
+/.config/nvim/lazy-lock.json
