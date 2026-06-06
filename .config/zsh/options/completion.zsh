@@ -2,7 +2,7 @@ _doomdots_completion_styles() {
     zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
     zstyle ':completion:*' rehash true
     zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS:-}"
-    zstyle ':completion:*' completer _expand _complete _ignored _approximate
+    zstyle ':completion:*' completer _complete _ignored _approximate
     zstyle ':completion:*' menu select
     zstyle ':completion:*' select-prompt '%SScrolling active: current selection at %p%s'
     zstyle ':completion:*:descriptions' format '%U%F{cyan}%d%f%u'
@@ -38,8 +38,8 @@ _doomdots_load_completion() {
 if [[ -o interactive ]]; then
     _doomdots_lazy_complete() {
         _doomdots_load_completion
-        bindkey '^I' expand-or-complete
-        zle expand-or-complete
+        bindkey '^I' complete-word
+        zle complete-word
         unfunction _doomdots_lazy_complete 2>/dev/null
     }
 
