@@ -4,14 +4,42 @@
 
 set -e
 
+stop_pid() {
+	pid="$1"
+	name="$2"
+
+	[ -n "$pid" ] || return 0
+	kill -0 "$pid" 2>/dev/null || return 0
+
+	kill "$pid" 2>/dev/null || true
+	i=0
+	while [ "$i" -lt 20 ] && kill -0 "$pid" 2>/dev/null; do
+		sleep 0.05
+		i=$((i + 1))
+	done
+
+	if kill -0 "$pid" 2>/dev/null; then
+		printf '[%s] %s pid=%s ignored TERM, sending KILL\n' "$(date '+%F %T')" "$name" "$pid" >>"${LFUB_LOG_FILE:-/dev/null}" 2>/dev/null || true
+		kill -KILL "$pid" 2>/dev/null || true
+	fi
+	wait "$pid" 2>/dev/null || true
+}
+
+remove_preview() {
+	[ -n "${FIFO_UEBERZUG:-}" ] || return 0
+	[ -p "$FIFO_UEBERZUG" ] || return 0
+
+	payload='{"action":"remove","identifier":"lf-preview"}'
+	timeout "${LF_PREVIEW_FIFO_TIMEOUT:-0.5}" sh -c 'printf "%s\n" "$1" >"$2"' sh "$payload" "$FIFO_UEBERZUG" 2>/dev/null || true
+}
+
 cleanup() {
 	status=$?
 	trap - HUP INT QUIT TERM PWR EXIT
+	remove_preview
 	[ "${LFUB_FD_OPENED:-0}" = 1 ] && exec 3>&- || true
-	if [ -n "${LFUB_UEBERZUG_PID:-}" ] && kill -0 "$LFUB_UEBERZUG_PID" 2>/dev/null; then
-		kill "$LFUB_UEBERZUG_PID" 2>/dev/null || true
-		wait "$LFUB_UEBERZUG_PID" 2>/dev/null || true
-	fi
+	stop_pid "${LFUB_LF_PID:-}" lf
+	stop_pid "${LFUB_UEBERZUG_PID:-}" ueberzug
 	[ -n "${FIFO_UEBERZUG:-}" ] && [ -p "$FIFO_UEBERZUG" ] && rm -f "$FIFO_UEBERZUG"
 	exit "$status"
 }
@@ -96,6 +124,8 @@ if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ] || [ -z "${DISPLAY:-}" ]; t
 else
 	cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/lf"
 	log_file="$cache_dir/ueberzug.log"
+	LFUB_LOG_FILE="$log_file"
+	export LFUB_LOG_FILE
 
 	[ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 	{
@@ -110,6 +140,7 @@ else
 	} >>"$log_file" 2>&1
 
 	export FIFO_UEBERZUG="$cache_dir/ueberzug-$$"
+	trap cleanup HUP INT QUIT TERM PWR EXIT
 	mkfifo "$FIFO_UEBERZUG"
 	ueberzug_fixed layer -p json <"$FIFO_UEBERZUG" >>"$log_file" 2>&1 &
 	LFUB_UEBERZUG_PID=$!
@@ -125,6 +156,7 @@ else
 
 	exec 3>"$FIFO_UEBERZUG"
 	LFUB_FD_OPENED=1
-	trap cleanup HUP INT QUIT TERM PWR EXIT
-	/usr/bin/lf "$@" 3>&-
+	/usr/bin/lf "$@" 3>&- &
+	LFUB_LF_PID=$!
+	wait "$LFUB_LF_PID"
 fi
