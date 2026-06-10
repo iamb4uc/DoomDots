@@ -1,14 +1,14 @@
 return {
-	"nvim-mini/mini.surround",
+    "nvim-mini/mini.surround",
 
-	version = false,
+    version = false,
 
-	event = {
-		"BufReadPost",
-		"BufNewFile",
-	},
+    event = {
+        "BufReadPost",
+        "BufNewFile",
+    },
 
-	config = function()
-		require("mini.surround").setup()
-	end,
+    config = function()
+        require("mini.surround").setup()
+    end,
 }

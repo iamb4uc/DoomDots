@@ -1,16 +1,16 @@
 return {
-	"folke/flash.nvim",
+    "folke/flash.nvim",
 
-	event = "VeryLazy",
+    event = "VeryLazy",
 
-	opts = {
-		modes = {
-			search = {
-				enabled = true,
-			},
-			char = {
-				enabled = true,
-			},
-		},
-	},
+    opts = {
+        modes = {
+            search = {
+                enabled = true,
+            },
+            char = {
+                enabled = true,
+            },
+        },
+    },
 }
