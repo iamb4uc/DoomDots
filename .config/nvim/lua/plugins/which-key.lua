@@ -1,37 +1,37 @@
 return {
-	"folke/which-key.nvim",
+    "folke/which-key.nvim",
 
-	event = "VeryLazy",
+    event = "VeryLazy",
 
-	opts = {
-		preset = "classic",
+    opts = {
+        preset = "classic",
 
-		delay = 300,
+        delay = 300,
 
-		icons = {
-			mappings = false,
-		},
+        icons = {
+            mappings = false,
+        },
 
-		win = {
-			border = "rounded",
-			padding = { 1, 2 },
-		},
-	},
+        win = {
+            border = "rounded",
+            padding = { 1, 2 },
+        },
+    },
 
-	config = function(_, opts)
-		local wk = require("which-key")
+    config = function(_, opts)
+        local wk = require("which-key")
 
-		wk.setup(opts)
+        wk.setup(opts)
 
-		wk.add({
-			{ "<leader>f", group = "file" },
-			{ "<leader>l", group = "list/search" },
-			{ "<leader>h", group = "help/hunk" },
-			{ "<leader>g", group = "git" },
-			{ "<leader>d", group = "diagnostics/document" },
-			{ "<leader>x", group = "trouble" },
-			{ "<leader>t", group = "terminal" },
-			{ "<leader>m", group = "mason" },
-		})
-	end,
+        wk.add({
+            { "<leader>f", group = "file" },
+            { "<leader>l", group = "list/search" },
+            { "<leader>h", group = "help/hunk" },
+            { "<leader>g", group = "git" },
+            { "<leader>d", group = "diagnostics/document" },
+            { "<leader>x", group = "trouble" },
+            { "<leader>t", group = "terminal" },
+            { "<leader>m", group = "mason" },
+        })
+    end,
 }

@@ -1,10 +1,10 @@
 return {
-	"nvim-mini/mini.pairs",
+    "nvim-mini/mini.pairs",
 
-	version = false,
-	event = "InsertEnter",
+    version = false,
+    event = "InsertEnter",
 
-	config = function()
-		require("mini.pairs").setup()
-	end,
+    config = function()
+        require("mini.pairs").setup()
+    end,
 }

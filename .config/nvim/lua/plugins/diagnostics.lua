@@ -1,9 +1,9 @@
 return {
-	"folke/trouble.nvim",
+    "folke/trouble.nvim",
 
-	cmd = {
-		"Trouble",
-	},
+    cmd = {
+        "Trouble",
+    },
 
-	opts = {},
+    opts = {},
 }

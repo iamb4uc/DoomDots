@@ -1,17 +1,17 @@
 local function map(m, k, v, desc)
-	vim.keymap.set(m, k, v, { silent = true, desc = desc })
+    vim.keymap.set(m, k, v, { silent = true, desc = desc })
 end
 
 local function isMiniOpen()
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local buf = vim.api.nvim_win_get_buf(win)
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
 
-		if vim.bo[buf].filetype == "minifiles" then
-			return true
-		end
-	end
+        if vim.bo[buf].filetype == "minifiles" then
+            return true
+        end
+    end
 
-	return false
+    return false
 end
 
 map("n", "<leader>fs", ":w<CR>", "Save file")
@@ -35,7 +35,6 @@ map("n", "H", ":bprevious<CR>", "Previous buffer")
 map("n", "L", ":bnext<CR>", "Next buffer")
 map("n", "<leader>bd", ":bdelete<CR>", "Delete buffer")
 
--- compiler stuff by The Tech gent Luke Smith
 map("n", "<leader>a", ':! compiler "%:p"<CR><CR>', "Compile file")
 
 -- Open corresponding .pdf/.html or preview
@@ -57,20 +56,20 @@ map("n", "<leader>r", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gc<Left><Left><Left>]], "R
 
 -- Mini File browser key mapps
 map("n", "<leader>e", function()
-	local mf = require("mini.files") -- iykyk
+    local mf = require("mini.files") -- iykyk
 
-	if isMiniOpen() then
-		mf.close()
-		return
-	end
+    if isMiniOpen() then
+        mf.close()
+        return
+    end
 
-	local path = vim.api.nvim_buf_get_name(0)
+    local path = vim.api.nvim_buf_get_name(0)
 
-	if path == "" then
-		path = vim.uv.cwd()
-	end
+    if path == "" then
+        path = vim.uv.cwd()
+    end
 
-	mf.open(path, true)
+    mf.open(path, true)
 end, "Toggle file explorer")
 
 -- Telescope
@@ -90,26 +89,26 @@ map("n", "<leader>gs", ":Telescope git_status<cr>", "Git status")
 
 -- LSP
 vim.api.nvim_create_autocmd("LspAttach", {
-	group = vim.api.nvim_create_augroup("user_lsp_keymaps", {
-		clear = true,
-	}),
-	callback = function(args)
-		local function lsp_map(mode, key, action, desc)
-			vim.keymap.set(mode, key, action, {
-				buffer = args.buf,
-				silent = true,
-				desc = desc,
-			})
-		end
+    group = vim.api.nvim_create_augroup("user_lsp_keymaps", {
+        clear = true,
+    }),
+    callback = function(args)
+        local function lsp_map(mode, key, action, desc)
+            vim.keymap.set(mode, key, action, {
+                buffer = args.buf,
+                silent = true,
+                desc = desc,
+            })
+        end
 
-		lsp_map("n", "gd", vim.lsp.buf.definition, "Go to definition")
-		lsp_map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
-		lsp_map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
-		lsp_map("n", "gr", vim.lsp.buf.references, "Go to references")
-		lsp_map("n", "K", vim.lsp.buf.hover, "Hover documentation")
-		lsp_map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-		lsp_map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
-	end,
+        lsp_map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+        lsp_map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+        lsp_map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
+        lsp_map("n", "gr", vim.lsp.buf.references, "Go to references")
+        lsp_map("n", "K", vim.lsp.buf.hover, "Hover documentation")
+        lsp_map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+        lsp_map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+    end,
 })
 
 -- Diagnostics

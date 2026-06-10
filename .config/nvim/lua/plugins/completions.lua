@@ -1,44 +1,44 @@
 return {
-	"saghen/blink.cmp",
+    "saghen/blink.cmp",
 
-	version = "1.*",
-	event = "InsertEnter",
+    version = "1.*",
+    event = "InsertEnter",
 
-	opts = {
-		keymap = {
-			preset = "default",
-		},
+    opts = {
+        keymap = {
+            preset = "enter",
+        },
 
-		appearance = {
-			nerd_font_variant = "mono",
-		},
+        appearance = {
+            nerd_font_variant = "mono",
+        },
 
-		completion = {
-			documentation = {
-				auto_show = true,
-				auto_show_delay_ms = 500,
-			},
-		},
+        completion = {
+            documentation = {
+                auto_show = true,
+                auto_show_delay_ms = 500,
+            },
+        },
 
-		signature = {
-			enabled = true,
-		},
+        signature = {
+            enabled = true,
+        },
 
-		sources = {
-			default = {
-				"lsp",
-				"path",
-				"snippets",
-				"buffer",
-			},
-		},
+        sources = {
+            default = {
+                "lsp",
+                "path",
+                "snippets",
+                "buffer",
+            },
+        },
 
-		fuzzy = {
-			implementation = "prefer_rust_with_warning",
-		},
-	},
+        fuzzy = {
+            implementation = "prefer_rust_with_warning",
+        },
+    },
 
-	opts_extend = {
-		"sources.default",
-	},
+    opts_extend = {
+        "sources.default",
+    },
 }

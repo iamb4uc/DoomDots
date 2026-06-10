@@ -37,16 +37,16 @@ vo.updatetime = 250
 vo.wrap = false
 
 vd.config({
-	virtual_text = {
-		source = "if_many",
-		prefix = "* ",
-	},
-	signs = true,
-	underline = true,
-	update_in_insert = false,
-	severity_sort = true,
-	float = {
-		border = "rounded",
-		source = true,
-	},
+    virtual_text = {
+        source = "if_many",
+        prefix = "* ",
+    },
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    severity_sort = true,
+    float = {
+        border = "rounded",
+        source = true,
+    },
 })
